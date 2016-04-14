@@ -4,3 +4,6 @@ E:\Users\Nikita\Documents\Visual Studio 2013\Projects\SavinKonturTest\SavinKontu
 E:\Users\Nikita\Documents\Visual Studio 2013\Projects\SavinKonturTest\SavinKonturTest\SavinKonturTest\obj\Debug\SavinKonturTest.csprojResolveAssemblyReference.cache
 E:\Users\Nikita\Documents\Visual Studio 2013\Projects\SavinKonturTest\SavinKonturTest\SavinKonturTest\obj\Debug\SavinKonturTest.exe
 E:\Users\Nikita\Documents\Visual Studio 2013\Projects\SavinKonturTest\SavinKonturTest\SavinKonturTest\obj\Debug\SavinKonturTest.pdb
+C:\Users\npsav_000\Documents\Visual Studio 2013\Projects\TestKontur\SavinKonturTest\SavinKonturTest\SavinKonturTest\bin\Debug\SavinKonturTest.exe.config
+C:\Users\npsav_000\Documents\Visual Studio 2013\Projects\TestKontur\SavinKonturTest\SavinKonturTest\SavinKonturTest\obj\Debug\SavinKonturTest.exe
+C:\Users\npsav_000\Documents\Visual Studio 2013\Projects\TestKontur\SavinKonturTest\SavinKonturTest\SavinKonturTest\obj\Debug\SavinKonturTest.pdb

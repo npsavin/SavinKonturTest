@@ -13,7 +13,7 @@ namespace SavinKonturTest
 {
         class Program
         {
-            static ViewModel.ViewModel vm { get; set; }
+            static ViewModel.ViewModel Vm { get; set; }
             public static void Main(string[] args)
             {
                 StartGame();
@@ -26,8 +26,8 @@ namespace SavinKonturTest
 
             private static void StartGame()
             {
-                vm = new ViewModel.ViewModel();
-                vm.StartGame();
+                Vm = new ViewModel.ViewModel();
+                Vm.StartGame();
             }
         }
 }
@@ -46,9 +46,10 @@ namespace SavinKonturTest.ViewModel
         public static List<Player> PlayerList { get; set; } 
         public static Table Table { get; private set; }
         private static bool _finish = false;
+        private int _risk = 0;
         public void StartGame()
         {
-            var collectionForStart = View.View.StartGame(null);
+            var collectionForStart = View.View.GetAboutTurn();
             Score = 0;
             Turn = 0;
             Deck = CreateDeck(collectionForStart.RequestText.Split(' '));
@@ -59,49 +60,42 @@ namespace SavinKonturTest.ViewModel
             MakeTurn(collectionForStart);
         }
 
-        private static void MakeTurn(View.View.Request requestAboutTurn)
+        private string MakeTurn(View.View.Request requestAboutTurn)
         {
             try
             {
-                if ("Start" == requestAboutTurn.RequestType)
+                switch (requestAboutTurn.RequestType)
                 {
-                    MakeTurn(MakeInformationString(_finish, 0));
-                }
-
-                if ("Play" == requestAboutTurn.RequestType)
-                {
-                    var risk = 0;
-                    var card =
-                        PlayerList.Single(x => x.Turn).PlaceCardOnTable(Convert.ToInt32(requestAboutTurn.RequestText));
-                    if (false == card.PlayerHaveInformationAboutColor)
-                    {
-                        risk++;
-                    }
-                    if (false == card.PlayerHaveInformationAboutRank)
-                    {
-                        risk++;
-                    }
-                    Table.PlaceСardOnTable(card);
-                    MakeTurn(MakeInformationString(_finish, risk));
-                }
-                if ("Color" == requestAboutTurn.RequestType)
-                {
-                    MakeTurn(MakeInformationString(_finish, 0));
-                }
-                if ("Color" == requestAboutTurn.RequestType)
-                {
-                    MakeTurn(MakeInformationString(_finish, 0));
-                }
-                if ("Drop" == requestAboutTurn.RequestType)
-                {
-                    var card = PlayerList.Single(x => x.Turn).PlaceCardOnTable(Convert.ToInt32(requestAboutTurn.RequestText));
-                    PlayerList.Single(x => x.Turn).TakeCardInDeck(card);
-                    MakeTurn(MakeInformationString(_finish, 0));
-                }
-                else
-                {
-                    
-                    Program.StartNewGame();
+                    case "Start":
+                        StartGame();
+                        return MakeInformationString(_finish, _risk);
+                    case "Play":
+                        var cardForPlay =
+                            PlayerList.Single(x => x.Turn)
+                                .PlaceCardOnTable(Convert.ToInt32(requestAboutTurn.RequestText));
+                        if (false == cardForPlay.PlayerHaveInformationAboutColor)
+                        {
+                            _risk++;
+                        }
+                        if (false == cardForPlay.PlayerHaveInformationAboutRank)
+                        {
+                            _risk++;
+                        }
+                        Table.PlaceСardOnTable(cardForPlay);
+                        return MakeInformationString(_finish, _risk);
+                    case "Color":
+                        return MakeInformationString(_finish, _risk);
+                    case "Rank":
+                        return MakeInformationString(_finish, _risk);
+                    case "Drop":
+                        var cardForDrop =
+                            PlayerList.Single(x => x.Turn)
+                                .PlaceCardOnTable(Convert.ToInt32(requestAboutTurn.RequestText));
+                        PlayerList.Single(x => x.Turn).TakeCardInDeck(cardForDrop);
+                        return MakeInformationString(_finish, _risk);
+                    default:
+                        Program.StartNewGame();
+                        break;
                 }
             }
 
@@ -116,9 +110,10 @@ namespace SavinKonturTest.ViewModel
                 _finish = true;
                 EndThisGame();
             }
+            return null;
         }
 
-        private static View.View.Request MakeInformationString(bool finished, int risk)
+        private static string MakeInformationString(bool finished, int risk)
         {
             try
             {
@@ -142,7 +137,7 @@ namespace SavinKonturTest.ViewModel
                 sb.Append(MakeStringAboutCards(Table.CardsOnTable));
                 if (0 == risk)
                 {
-                    return View.View.GetAboutTurn(sb.ToString());
+                    return sb.ToString();
                 }
                 else
                 {
@@ -155,7 +150,7 @@ namespace SavinKonturTest.ViewModel
                     newSb.Append(risk);
                     newSb.AppendLine();
                     newSb.Append(sb);
-                    return View.View.GetAboutTurn(newSb.ToString());
+                    return newSb.ToString();
                 }
             }
             finally
@@ -197,7 +192,7 @@ namespace SavinKonturTest.ViewModel
             {
                 if (2 != cards.Length || !char.IsDigit(cards[1]) || !char.IsLetter(cards[0]))
                 {
-                    View.View.DelegateForRepeatString handler = View.View.StartGame;
+                    View.View.DelegateForRepeatString handler = View.View.GetAboutTurn;
 
                     CreateDeck(View.View.InvalidInput(handler).RequestText.Split(' '));
                 }
@@ -207,7 +202,7 @@ namespace SavinKonturTest.ViewModel
                 }
                 catch (InvaliidCardException e)
                 {
-                    View.View.DelegateForRepeatString handler = View.View.StartGame;
+                    View.View.DelegateForRepeatString handler = View.View.GetAboutTurn;
                     CreateDeck(View.View.InvalidInput(handler, e.Message).RequestText.Split(' '));
                 }
                 
@@ -219,7 +214,7 @@ namespace SavinKonturTest.ViewModel
             }
             catch (InvaliidCardException e)
             {
-                View.View.DelegateForRepeatString handler = View.View.StartGame;
+                View.View.DelegateForRepeatString handler = View.View.GetAboutTurn;
                 CreateDeck(View.View.InvalidInput(handler, e.Message).RequestText.Split(' '));
             }
             return objectDecp as Deck;
@@ -464,7 +459,7 @@ namespace SavinKonturTest.View
         private const string TellColor = "Tell color ";
         private const string TellRank = "Tell rank ";
         private const string DropCard = "Drop card ";
-        public delegate Request DelegateForRepeatString(string stringForGame);
+        public delegate Request DelegateForRepeatString();
 
         public class Request
         {
@@ -477,36 +472,24 @@ namespace SavinKonturTest.View
                 RequestType = requestType;
             }
         }
-        public static Request StartGame(string stringForStartGame)
-        {
-            DelegateForRepeatString repeatCallStartGame = StartGame;
-            if (null == stringForStartGame)
-            {
-                stringForStartGame = Console.ReadLine();
-            }
-            if (null != stringForStartGame && stringForStartGame.StartsWith(StartString))
-            {
-                return new Request(stringForStartGame.Substring(StartString.Length), "Start");
-            }
-            return InvalidInput(repeatCallStartGame);
-        }
+        
 
         public static void EndGame(string stringForEnd)
         {
             Console.WriteLine(stringForEnd);
         }
 
-        public static Request GetAboutTurn(string startInformationAboutTurn)
+        public static Request GetAboutTurn()
         {
             DelegateForRepeatString repeatCallThisMethod = GetAboutTurn;
-            if (null != startInformationAboutTurn)
-            {
-                Console.WriteLine(startInformationAboutTurn);
-            }
             var informationAboutNexTurn = Console.ReadLine();
             if (null == informationAboutNexTurn)
             {
-                return InvalidInput(repeatCallThisMethod);
+                InvalidInput(repeatCallThisMethod);
+            }
+            if (informationAboutNexTurn.StartsWith(StartString))
+            {
+                return new Request(informationAboutNexTurn.Substring(StartString.Length), "Start");
             }
             if (informationAboutNexTurn.StartsWith(PlayCard))
             {
@@ -531,13 +514,13 @@ namespace SavinKonturTest.View
         {
             Console.WriteLine(exceptionMessage);
             Console.WriteLine("Repeat data entry");
-            var ruquestForReturn = callingDelegate(Console.ReadLine());
+            var ruquestForReturn = callingDelegate();
             return ruquestForReturn;
         }
         public static Request InvalidInput(DelegateForRepeatString callingDelegate)
         {
             Console.WriteLine("Invalid input. Repeat data entry");
-            var requestForReturn = callingDelegate(Console.ReadLine());
+            var requestForReturn = callingDelegate();
             return requestForReturn;
         }
     }
