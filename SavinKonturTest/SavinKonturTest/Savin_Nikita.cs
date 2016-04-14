@@ -38,19 +38,21 @@ namespace SavinKonturTest.ViewModel
    
     class ViewModel
     {
-        public static int Score { get; private set; }
-        public static int Turn { get; private set; }
-        public static Deck Deck { get; private set; }
-        public static Player Player1 { get; private set; }
-        public static Player Player2 { get; private set; }
-        public static List<Player> PlayerList { get; set; } 
-        public static Table Table { get; private set; }
-        private static bool _finish = false;
+        public int Score { get; private set; }
+        public int Turn { get; private set; }
+        public Deck Deck { get; private set; }
+        public Player Player1 { get; private set; }
+        public Player Player2 { get; private set; }
+        public List<Player> PlayerList { get; set; } 
+        public Table Table { get; private set; }
+        private bool _finish;
+        private int Risk { get; set; }
         public void StartGame()
         {
             var collectionForStart = View.View.StartGame(null);
             Score = 0;
             Turn = 0;
+            Risk = 0;
             Deck = CreateDeck(collectionForStart.RequestText.Split(' '));
             Player1 = CreatePlayer(Deck, true);
             Player2 = CreatePlayer(Deck, false);
@@ -59,30 +61,36 @@ namespace SavinKonturTest.ViewModel
             MakeTurn(collectionForStart);
         }
 
-        private static void MakeTurn(View.View.Request requestAboutTurn)
+        private  void MakeTurn(View.View.Request requestAboutTurn)
         {
+            var flagForRiscIncrement = false;
             try
             {
                 if ("Start" == requestAboutTurn.RequestType)
                 {
-                    MakeTurn(MakeInformationString(_finish, 0));
+                    var requset = MakeInformationString(_finish, 0);
+                    MakeTurn(requset);
                 }
 
                 if ("Play" == requestAboutTurn.RequestType)
                 {
-                    var risk = 0;
                     var card =
                         PlayerList.Single(x => x.Turn).PlaceCardOnTable(Convert.ToInt32(requestAboutTurn.RequestText));
                     if (false == card.PlayerHaveInformationAboutColor)
                     {
-                        risk++;
+                        flagForRiscIncrement = true;
                     }
                     if (false == card.PlayerHaveInformationAboutRank)
                     {
-                        risk++;
+                        flagForRiscIncrement = true;
                     }
                     Table.PlaceСardOnTable(card);
-                    MakeTurn(MakeInformationString(_finish, risk));
+                    if (flagForRiscIncrement)
+                    {
+                        Risk++;
+                    }
+                    var requset = MakeInformationString(_finish, Risk);
+                    MakeTurn(requset);
                 }
                 if ("Color" == requestAboutTurn.RequestType)
                 {
@@ -96,7 +104,8 @@ namespace SavinKonturTest.ViewModel
                 {
                     var card = PlayerList.Single(x => x.Turn).PlaceCardOnTable(Convert.ToInt32(requestAboutTurn.RequestText));
                     PlayerList.Single(x => x.Turn).TakeCardInDeck(card);
-                    MakeTurn(MakeInformationString(_finish, 0));
+                    var requset = MakeInformationString(_finish, 0);
+                    MakeTurn(requset);
                 }
                 else
                 {
@@ -109,16 +118,28 @@ namespace SavinKonturTest.ViewModel
             {
 
                 _finish = true;
-                EndThisGame();
+                EndThisGame(Risk);
             }
             catch (InvaliidCardException e)
             {
                 _finish = true;
-                EndThisGame();
+                EndThisGame(Risk);
             }
         }
 
-        private static View.View.Request MakeInformationString(bool finished, int risk)
+        private void GiveInformAboutEndidGame(int risk, int cards)
+        {
+            var newSb = new StringBuilder();
+            newSb.Append("Turn: ");
+            newSb.Append(Turn);
+            newSb.Append(", cards: ");
+            newSb.Append(cards);
+            newSb.Append(", with risk: ");
+            newSb.Append(risk);
+            newSb.AppendLine();
+            View.View.GetAboutTurn(newSb.ToString());
+        }
+        private View.View.Request MakeInformationString(bool finished, int risk)
         {
             try
             {
@@ -179,7 +200,7 @@ namespace SavinKonturTest.ViewModel
             return sb.ToString();
         }
 
-        private static void ChangeTurn()
+        private void ChangeTurn()
         {
             Player1.Turn = !Player1.Turn;
             Player2.Turn = !Player2.Turn;
@@ -225,9 +246,9 @@ namespace SavinKonturTest.ViewModel
             return objectDecp as Deck;
         }
 
-        private static void EndThisGame()
+        private void EndThisGame(int risk)
         {
-            MakeInformationString(true, 0);
+            MakeInformationString(true, risk);
             Program.StartNewGame();
         }
     }
